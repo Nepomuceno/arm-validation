@@ -1,5 +1,7 @@
 export const currentSchemas : string[] = [
-"http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json"
+"http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentParameters.json"
+,"http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json"
+,"http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json"
 ,"http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"
 ,"http://schema.management.azure.com/schemas/2015-08-19/Microsoft.Search.json"
 ,"http://schema.management.azure.com/schemas/2016-05-16/Microsoft.AnalysisServices.json"
