@@ -1,0 +1,491 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "MachinePrefix": {
+      "type": "string",
+      "defaultValue": "v-ci-mtrc"
+    },
+    "GrafanaMachineSize": {
+      "type": "string",
+      "defaultValue": "Standard_A1"
+    },
+    "GrafanaMachineCount": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "DBMachineSize": {
+      "type": "string",
+      "defaultValue": "Standard_A1"
+    },
+    "AdminUser": {
+      "type": "string"
+    },
+    "AdminPassword": {
+      "type": "securestring"
+    },
+    "StorageName": {
+      "type": "string"
+    },
+    "SubnetNameForDB": {
+      "type": "string"
+    },
+    "SubnetNameForFrontEnd": {
+      "type": "string"
+    },
+    "VNetName": {
+      "type": "string"
+    },
+    "VNetResourceGroup": {
+      "type": "string"
+    },
+    "ScriptPrefix": {
+      "type": "string"
+    },
+    "PuppetMasterUrl": {
+      "type": "string"
+    },
+    "PuppetEnvironment": {
+      "type": "string",
+      "defaultValue": "preprod",
+      "allowedValues": [
+        "vagrant",
+        "ci",
+        "preprod",
+        "production"
+      ]
+    },
+    "DomainName": {
+      "type": "string",
+      "defaultValue": "ve-ci.com"
+    },
+    "StaticIpForDB": {
+      "type": "string"
+    },
+    "DataDiskPath": {
+      "type": "string",
+      "defaultValue": "/data"
+    },
+    "DataDiskSize": {
+      "type": "int",
+      "defaultValue": 1023
+    },
+    "AutoShutdown": {
+      "type": "string",
+      "defaultValue": "DoNotShutDown"
+    }
+  },
+  "variables": {
+    "imagePublisher": "Canonical",
+    "imageOffer": "UbuntuServer",
+    "ubuntuOSVersion": "14.04.2-LTS",
+    "vmStorageAccountContainerName": "[concat('vhds-', parameters('MachinePrefix'))]",
+    "vnetID": "[resourceId(parameters('VNetResourceGroup'),'Microsoft.Network/virtualNetworks',parameters('VNetName'))]",
+    "subnetRefForDb": "[concat(variables('vnetID'),'/subnets/',parameters('SubnetNameForDB'))]",
+    "subnetRefForFrontEnd": "[concat(variables('vnetID'),'/subnets/',parameters('SubnetNameForFrontEnd'))]",
+    "puppetMasterPort": "8140",
+    "puppetVersion": "none",
+    "linuxScriptFiles": [
+      "[concat(parameters('ScriptPrefix'),'/','ubuntu14.sh')]",
+      "[concat(parameters('ScriptPrefix'),'/','configubuntu.sh')]",
+      "[concat(parameters('ScriptPrefix'),'/','vm-disk-utils-0.3.sh')]"
+    ],
+    "grafanaVmPrefix": "[concat(parameters('MachinePrefix'), '-gf-')]",
+    "mariaDbVmName": "[concat(parameters('MachinePrefix'), '-gd-01')]",
+    "grafanaASName": "[concat(parameters('MachinePrefix'),'-gf-as')]",
+    "grafanaNicPrefix": "[concat(parameters('MachinePrefix'),'-gf-ni-')]",
+    "mariaDbNicName": "[concat(parameters('MachinePrefix'),'-gd-ni-01')]",
+    "publicIPAddressName": "[concat(parameters('MachinePrefix'), '-gf-ip')]",
+    "dnsNameForPublicIP": "[concat(parameters('MachinePrefix'), '-gf')]",
+    "publicIpId": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
+    "lbId": "[resourceId('Microsoft.Network/loadBalancers',concat(parameters('MachinePrefix'),'-gf-lb'))]",
+    "Team": "ITOps",
+    "CostCenter": "Infrastructure",
+    "Product": "Metrics"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('StorageName')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "accountType": "Standard_LRS"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('grafanaASName')]",
+      "tags": {
+        "displayName": "AvailabilitySet",
+        "team": "[variables('Team')]",
+        "costCenter": "[variables('CostCenter')]",
+        "product": "[variables('Product')]"
+      },
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+
+      "properties": {
+        "platformFaultDomainCount": 3,
+        "platformUpdateDomainCount": 3
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIPAddressName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('dnsNameForPublicIP')]"
+        }
+      },
+      "tags": {
+        "displayName": "Ip",
+        "team": "[variables('Team')]",
+        "costCenter": "[variables('CostCenter')]",
+        "product": "[variables('Product')]"
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('mariaDbNicName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [],
+
+      "tags": {
+        "displayName": "NetworkInterface",
+        "team": "[variables('Team')]",
+        "costCenter": "[variables('CostCenter')]",
+        "product": "[variables('Product')]"
+      },
+
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[parameters('StaticIpForDB')]",
+              "subnet": {
+                "id": "[variables('subnetRefForDb')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('grafanaNicPrefix'),padLeft(copyindex(1),2,'0'))]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[variables('lbId')]"
+      ],
+
+      "copy": {
+        "name": "nicLoop",
+        "count": "[parameters('GrafanaMachineCount')]"
+      },
+
+      "tags": {
+        "displayName": "NetworkInterface",
+        "team": "[variables('Team')]",
+        "costCenter": "[variables('CostCenter')]",
+        "product": "[variables('Product')]"
+      },
+
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(variables('lbId'), '/backendAddressPools/backendhttp')]"
+                }
+              ],
+              "subnet": {
+                "id": "[variables('subnetRefForFrontEnd')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines",
+
+      "name": "[concat(variables('grafanaVmPrefix'),padLeft(copyindex(1),2,'0'))]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('StorageName'))]",
+        "[resourceId('Microsoft.Compute/availabilitySets', variables('grafanaASName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('grafanaNicPrefix'),padLeft(copyindex(1),2,'0'))]"
+      ],
+
+      "copy": {
+        "name": "machineLoop",
+        "count": "[parameters('GrafanaMachineCount')]"
+      },
+
+      "tags": {
+        "displayName": "Machines",
+        "team": "[variables('Team')]",
+        "costCenter": "[variables('CostCenter')]",
+        "product": "[variables('Product')]",
+        "AutoShutdownSchedule": "[parameters('AutoShutdown')]"
+      },
+
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('GrafanaMachineSize')]"
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('grafanaASName'))]"
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('grafanaVmPrefix'),padLeft(copyindex(1),2,'0'))]",
+          "adminUsername": "[parameters('AdminUser')]",
+          "adminPassword": "[parameters('AdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[variables('ubuntuOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk1",
+            "vhd": {
+              "uri": "[concat('http://',parameters('StorageName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',parameters('MachinePrefix'),'gfos', padLeft(copyindex(1),2,'0'),'.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "name": "dataDisk1",
+              "lun": 0,
+              "caching": "ReadOnly",
+              "createOption": "Empty",
+              "vhd": {
+                "uri": "[concat('http://',parameters('StorageName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',parameters('MachinePrefix'),'gfdata', padLeft(copyindex(1),2,'0'), '.vhd')]"
+              },
+              "diskSizeGB": "[parameters('DataDiskSize')]"
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('grafanaNicPrefix'),padLeft(copyindex(1),2,'0')))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('mariaDbVmName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('StorageName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('mariaDbNicName'))]"
+      ],
+
+      "tags": {
+        "displayName": "Machines",
+        "team": "[variables('Team')]",
+        "costCenter": "[variables('CostCenter')]",
+        "product": "[variables('Product')]",
+        "AutoShutdownSchedule": "[parameters('AutoShutdown')]"
+      },
+
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('DBMachineSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('mariaDbVmName')]",
+          "adminUsername": "[parameters('AdminUser')]",
+          "adminPassword": "[parameters('AdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[variables('ubuntuOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk1",
+            "vhd": {
+              "uri": "[concat('http://',parameters('StorageName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',parameters('MachinePrefix'),'gdos01.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "name": "dataDisk1",
+              "lun": 0,
+              "caching": "ReadOnly",
+              "createOption": "Empty",
+              "vhd": {
+                "uri": "[concat('http://',parameters('StorageName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',parameters('MachinePrefix'),'gddata01.vhd')]"
+              },
+              "diskSizeGB": "[parameters('DataDiskSize')]"
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('mariaDbNicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('grafanaVmPrefix'),padLeft(copyindex(1),2,'0'), '/install')]",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('grafanaVmPrefix'), padLeft(copyindex(1),2,'0'))]"
+      ],
+
+      "copy": {
+        "name": "extensionLoop",
+        "count": "[parameters('GrafanaMachineCount')]"
+      },
+
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "settings": {
+          "fileUris": "[variables('linuxScriptFiles')]",
+          "commandToExecute": "[concat('sh configubuntu.sh ', parameters('DataDiskPath'), ' ', parameters('PuppetMasterUrl'), ' ', parameters('PuppetEnvironment'), ' ', variables('puppetMasterPort'), ' ', variables('puppetVersion'), ' ', parameters('DomainName'), ' ', parameters('AdminUser'), ' ', parameters('AdminPassword'), ' ', concat(variables('grafanaVmPrefix'),padLeft(copyindex(1),2,'0')) ) ]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('mariaDbVmName'), '/install')]",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('mariaDbVmName'))]"
+      ],
+
+      "tags": {
+        "team": "[variables('Team')]",
+        "costCenter": "[variables('CostCenter')]",
+        "product": "[variables('Product')]"
+      },
+
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "settings": {
+          "fileUris": "[variables('linuxScriptFiles')]",
+          "commandToExecute": "[concat('sh configubuntu.sh ', parameters('DataDiskPath'), ' ', parameters('PuppetMasterUrl'), ' ', parameters('PuppetEnvironment'), ' ', variables('puppetMasterPort'), ' ', variables('puppetVersion'), ' ', parameters('DomainName'), ' ', parameters('AdminUser'), ' ', parameters('AdminPassword'), ' ', concat(variables('mariaDbVmName')) ) ]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[concat(parameters('MachinePrefix'),'-gf-lb')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[variables('PublicIpId')]"
+      ],
+      "tags": {
+        "displayName": "LoadBalancer",
+        "team": "[variables('Team')]",
+        "costCenter": "[variables('CostCenter')]",
+        "product": "[variables('Product')]"
+      },
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[concat(parameters('MachinePrefix'),'-gf-lbfront')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[variables('PublicIpId')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "backendhttp"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('lbId'), '/frontendIpConfigurations/',parameters('MachinePrefix'),'-gf-lbfront')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('lbId'), '/backendAddressPools/backendhttp')]"
+              },
+              "probe": {
+                "id": "[concat(variables('lbId'), '/probes/lbprobe')]"
+              },
+
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "idleTimeoutInMinutes": 4
+            },
+            "name": "lbhttprule"
+          },
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('lbId'), '/frontendIpConfigurations/',parameters('MachinePrefix'),'-gf-lbfront')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('lbId'), '/backendAddressPools/backendhttp')]"
+              },
+              "probe": {
+                "id": "[concat(variables('lbId'), '/probes/lbprobe')]"
+              },
+
+              "protocol": "Tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "idleTimeoutInMinutes": 4
+            },
+            "name": "lbhttpsrule"
+          }
+        ],
+        "probes": [
+          {
+            "properties": {
+              "protocol": "Tcp",
+              "port": 80,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            },
+            "name": "lbprobe"
+          }
+        ]
+      }
+    }
+  ]
+}

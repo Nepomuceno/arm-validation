@@ -1,0 +1,7 @@
+--require ts-node/register
+--require chai
+--timeout 20000
+--watch-extensions ts,json
+--recursive
+
+test/**/*.test.ts

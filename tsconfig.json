@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+      "allowJs": false,
+      "target": "es5",
+      "moduleResolution": "node",
+      "outDir": "bin/",
+      "sourceMap": true,
+      "lib": ["es2015"]
+  },
+  "include": [
+    "src/*",
+    "test/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

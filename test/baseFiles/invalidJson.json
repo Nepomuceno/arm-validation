@@ -1,0 +1,57 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "MachinePrefix": {
+      "value": "v-ci-mtrc"
+    },
+    "GrafanaMachineSize": {
+      "value": "Standard_A1"
+    },
+    "DBMachineSize": {
+      "value": "Standard_A1"
+    },
+    "AdminUser": {
+      "value": "ciadministrator"
+    },
+    "StorageName": {
+      "value": "vcimtrcgrafana"
+    },
+    "SubnetNameForDB": {
+      "value": "v-ci-net-db-01"
+    },
+    "SubnetNameForFrontEnd": {
+      "value": "v-ci-net-fe-01"
+    },
+    "VNetName": {
+      "value": "v-ci-net-01"
+    },
+    "VNetResourceGroup": {
+      "value": "v-ci-net"
+    },
+    "ScriptPrefix": {
+      "value": "http://vedeploymentresources.blob.core.windows.net/develop"
+    },
+    "PuppetMasterUrl": {
+      "value": "v-ci-infr-pm.westeurope.cloudapp.azure.com"
+    },
+    "PuppetEnvironment": {
+      "value": "ci"
+    },
+    "DomainName": {
+      "value": "ve-ci.com"
+    },
+    "StaticIpForDB": {
+      "value": "10.167.48.245"
+    },
+    "DataDiskPath": {
+      "value": "/data"
+    },
+    "DataDiskSize": {
+      "value": 1023
+    },
+    "AutoShutdown": {
+      "value": "22:00 -> 05:30, Saturday, Sunday"
+    },
+  }
+}

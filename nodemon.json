@@ -1,0 +1,21 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules",
+    "bin/**/*.*",
+    "*.js"
+  ],
+  "verbose": true,
+  "events": {
+    "restart": "$FILENAME"
+  },
+  "watch": [
+    "test/",
+    "src/"
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "ext": "ts json tsx"
+}
