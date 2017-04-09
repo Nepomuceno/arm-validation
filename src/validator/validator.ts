@@ -18,7 +18,9 @@ export class Validator {
                 callback(error || new Error('Loading error: ' + error));
             });
     }
+
     private validator: ajv.Ajv;
+    
     constructor() {
         this.validator = new ajv({ extendRefs: true });
     }
@@ -149,7 +151,4 @@ export class Validator {
         }
         return result;
     }
-
-
-
 }
