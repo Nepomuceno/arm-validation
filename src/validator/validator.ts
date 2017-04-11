@@ -53,22 +53,31 @@ export class Validator {
         });
     }
 
-    public validateSchema(filename: string): Promise<Error[]> {
+    public validateSchema(filename: string, parameters: any = {}): Promise<Error[]> {
         return new Promise((resolve, reject) => {
-            console.log(`Validatin schema for ${filename}`);
+            console.log(`Validating schema for ${filename}`);
             var errorFile = this.validateJson(filename);
             if (errorFile) reject(errorFile);
             let current: any = JSON.parse(fs.readFileSync(filename).toString());
-            this.substitueDefaults(current);
+
+            if ('parameters' in current) {
+                for (var parameter in parameters) {
+                    if (parameters.hasOwnProperty(parameter)) {
+                        Object.assign(current.parameters[parameter], parameters[parameter]);
+                    }
+                }
+            }
+
+            this.substituteDefaults(current);
             this.validator.validate(current["$schema"], current);
             resolve(this.validator.errors || []);
         });
     }
 
-    private substitueDefaults(template: any) {
+    private substituteDefaults(template: any) {
         var parameters = (value: string): any => {
             if (value in template.parameters) {
-                return template.parameters[value].defaultValue;
+                return template.parameters[value].value || template.parameters[value].defaultValue || "";
             }
         };
         var variables = (value: string): any => {

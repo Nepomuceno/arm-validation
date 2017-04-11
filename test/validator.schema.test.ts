@@ -14,7 +14,8 @@ describe('Validate Schemas', () => {
         .catch((err: any) => done(err));
     })
     it('BasicValidation', (done) => {
-        _self.validator.validateSchema('./test/baseFiles/validTemplate.json')
+        let paramSchema: any = JSON.parse('./test/baseFiles/validParam.json');
+        _self.validator.validateSchema('./test/baseFiles/validTemplate.json', paramSchema.parameters)
         .then((result: Error[]) => {
             if(result) expect(result).to.be.empty;
             done();
