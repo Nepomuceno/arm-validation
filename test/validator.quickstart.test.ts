@@ -26,7 +26,7 @@ class ValidatorQuickStart {
 
     }
     public RunTest() {
-        this._validator.Initialize()
+        return this._validator.Initialize()
             .then(() => {
                 describe("Validate files", () => {
 
@@ -60,6 +60,12 @@ class ValidatorQuickStart {
     }
 
 }
-var quickStart = new ValidatorQuickStart();
-quickStart.RunTest();
 
+// See http://stackoverflow.com/a/35793665
+var quickStart = new ValidatorQuickStart();
+before(function() {
+    return quickStart.RunTest();
+});
+it('Placeholder to allow before() to work', function () {
+    console.log('Mocha requires this in order to block for async generation of tests');
+});
