@@ -107,6 +107,12 @@ export class Validator {
         }
         if (template.resources) {
             template.resources.forEach((resource: any, i) => {
+
+                // Avoids schema failures due to validation of [resourceGroup.location()] against the valid location enum
+                function resourceGroup() {
+                    return { location: 'West US' };
+                }
+
                 Object.keys(resource)
                     .forEach((resourceKey: string) => {
                         if (typeof template.resources[i][resourceKey] === 'string' && template.resources[i][resourceKey].startsWith(`[`)) {
