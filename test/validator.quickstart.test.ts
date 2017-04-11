@@ -33,23 +33,40 @@ class ValidatorQuickStart {
                     this._files.forEach(file => {
                         let fileName = file.split('\\')[file.split('\\').length - 1];
                         let fileParent = file.split('\\')[file.split('\\').length - 2];
+                        let paramFile = file.split('.json')[0] + '.parameters.json';
+                        let paramExists = fs.existsSync(paramFile);
+
                         it(`${fileParent}\\${fileName}`, (done) => {
+                            if (paramExists) {
+                                var error = this._validator.validateJson(paramFile);
+                                if (error) {
+                                    done(error);
+                                }
+                            }
+
                             var error = this._validator.validateJson(file);
                             if (error) {
                                 done(error);
                             }
                             else {
-                                this._validator.validateSchema(file)
-                                    .then(errors => {
-                                        if (errors.length > 0) {
-                                            done(errors[0]);
-                                        } else {
-                                            expect(errors).to.be.empty;
-                                            done();
-                                        }
+                                var errors;
+                                if (paramExists) {
+                                    let paramSchema: any = JSON.parse(fs.readFileSync(paramFile).toString());
+                                    errors = this._validator.validateSchema(file, paramSchema.parameters);
+                                }
+                                else {
+                                    errors = this._validator.validateSchema(file);
+                                }
+                                errors.then(errors => {
+                                    if (errors.length > 0) {
+                                        done(errors[0]);
+                                    } else {
+                                        expect(errors).to.be.empty;
+                                        done();
+                                    }
 
-                                    })
-                                    .catch(err => done(err));
+                                })
+                                .catch(err => done(err));
                             };
                         });
 
