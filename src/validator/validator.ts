@@ -32,7 +32,7 @@ export class Validator {
             CurrentSchemas.forEach(schema => {
                 requests.push(axios.get(schema));
             });
-            Promise.all(requests)
+            return Promise.all(requests)
                 .then(results => {
                     results.forEach(result => {
                         //HACK: until microsoft fix their base schemas.
