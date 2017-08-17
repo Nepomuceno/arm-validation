@@ -4,4 +4,4 @@
 --watch-extensions ts,json
 --recursive
 
-test/**/*.test.ts
+test/**/validator.quickstart.test.ts
