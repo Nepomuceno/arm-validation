@@ -3,6 +3,9 @@ export const currentSchemas : string[] = [
 ,"http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json"
 ,"http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json"
 ,"http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"
+,"http://schema.management.azure.com/schemas/2014-04-01/Microsoft.Sql.json"
+,"http://schema.management.azure.com/schemas/2015-05-01-preview/Microsoft.Sql.json"
+,"http://schema.management.azure.com/schemas/2014-04-01-preview/Microsoft.Sql.json"
 ,"http://schema.management.azure.com/schemas/2015-08-19/Microsoft.Search.json"
 ,"http://schema.management.azure.com/schemas/2016-05-16/Microsoft.AnalysisServices.json"
 ,"http://schema.management.azure.com/schemas/2016-06-01/Microsoft.RecoveryServices.json"
@@ -13,7 +16,6 @@ export const currentSchemas : string[] = [
 ,"http://schema.management.azure.com/schemas/2016-05-15/Microsoft.DevTestLab.json"
 ,"http://schema.management.azure.com/schemas/2015-05-21-preview/Microsoft.DevTestLab.json"
 ,"http://schema.management.azure.com/schemas/2014-06-01/Microsoft.Web.json"
-,"http://schema.management.azure.com/schemas/2014-04-01-preview/Microsoft.Sql.json"
 ,"http://schema.management.azure.com/schemas/2014-04-01/Microsoft.Insights.json"
 ,"http://schema.management.azure.com/schemas/2014-02-26/microsoft.visualstudio.json"
 ,"http://schema.management.azure.com/schemas/2014-04-01-preview/Microsoft.Cache.json"
@@ -58,15 +60,62 @@ export const currentSchemas : string[] = [
 ,"http://schema.management.azure.com/schemas/2016-07-07/Microsoft.ApiManagement.json"
 ,"http://schema.management.azure.com/schemas/2016-04-30-preview/Microsoft.Compute.json"
 ,"http://schema.management.azure.com/schemas/2016-06-27-preview/Microsoft.ContainerRegistry.json"
-,"http://schema.management.azure.com/schemas/2017-03-01-preview/Microsoft.Insights.ActionGroup.json"
-,"http://schema.management.azure.com/schemas/2017-03-01-preview/Microsoft.Insights.ActivityLogAlert.json"
 ,"http://schema.management.azure.com/schemas/2014-04-01/SuccessBricks.ClearDB.json"
 ,"http://schema.management.azure.com/schemas/2015-01-01/Sendgrid.Email.json"
 ,"http://schema.management.azure.com/schemas/2016-02-01/Microsoft.Resources.json"
 ,"http://schema.management.azure.com/schemas/2015-01-01/Microsoft.Resources.json"
 ,"http://schema.management.azure.com/schemas/2015-01-01/Microsoft.Authorization.json"
 ,"http://schema.management.azure.com/schemas/2014-10-01-preview/Microsoft.Authorization.json"
+,"http://schema.management.azure.com/schemas/2015-04-01/Microsoft.DomainRegistration.json"
+,"http://schema.management.azure.com/schemas/2015-08-01/Microsoft.CertificateRegistration.json"
+,"http://schema.management.azure.com/schemas/2016-03-01/Microsoft.Web.json"
+,"http://schema.management.azure.com/schemas/2016-08-01/Microsoft.Web.json"
+,"http://schema.management.azure.com/schemas/2016-09-01/Microsoft.Web.json"
+,"http://schema.management.azure.com/schemas/2017-05-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2016-06-01/Microsoft.Web.json"
+,"http://schema.management.azure.com/schemas/2017-05-10/Microsoft.Resources.json"
+,"http://schema.management.azure.com/schemas/2016-09-01-preview/Microsoft.Solutions.json"
+,"http://schema.management.azure.com/schemas/2017-03-01/Microsoft.ApiManagement.json"
+,"http://schema.management.azure.com/schemas/2017-03-01-preview/Microsoft.Insights.json"
+,"http://schema.management.azure.com/schemas/2016-06-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2016-07-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2016-08-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2016-09-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2016-10-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2016-11-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2016-12-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2017-06-01/Microsoft.Network.json"
+,"http://schema.management.azure.com/schemas/2017-04-01/Microsoft.Insights.json" 
 ,"http://schema.management.azure.com/schemas/2016-04-02/Microsoft.Cdn.json"];
 export {currentSchemas as CurrentSchemas};
 export const templateSchema = "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json";
 export const parameterSchema = "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json";
+
+/*
+,"http://schema.management.azure.com/schemas/2017-03-01-preview/Microsoft.Insights.ActionGroup.json"
+,"http://schema.management.azure.com/schemas/2017-03-01-preview/Microsoft.Insights.ActivityLogAlert.json"
+,"http://schema.management.azure.com/schemas/2014-04-01-preview/Microsoft.Sql.json"
+*/
+
+// http://schema.management.azure.com/schemas/2015-04-01/Microsoft.DomainRegistration.json
+// http://schema.management.azure.com/schemas/2015-08-01/Microsoft.CertificateRegistration.json
+// http://schema.management.azure.com/schemas/2016-03-01/Microsoft.Web.json
+// http://schema.management.azure.com/schemas/2016-08-01/Microsoft.Web.json
+// http://schema.management.azure.com/schemas/2016-09-01/Microsoft.Web.json
+// http://schema.management.azure.com/schemas/2017-05-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2016-06-01/Microsoft.Web.json
+// http://schema.management.azure.com/schemas/2017-05-10/Microsoft.Resources.json
+// http://schema.management.azure.com/schemas/2016-09-01-preview/Microsoft.Solutions.json
+// http://schema.management.azure.com/schemas/2017-03-01/Microsoft.ApiManagement.json
+// http://schema.management.azure.com/schemas/2017-03-01-preview/Microsoft.Insights.json
+// http://schema.management.azure.com/schemas/2016-06-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2016-07-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2016-08-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2016-09-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2016-10-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2016-11-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2016-12-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2017-06-01/Microsoft.Network.json
+// http://schema.management.azure.com/schemas/2017-04-01/Microsoft.Insights.json
+// http://schema.management.azure.com/schemas/2016-05-16/Microsoft.AnalysisServices.json
+// http://schema.management.azure.com/schemas/2014-04-01/Microsoft.Sql.json

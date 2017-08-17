@@ -20,7 +20,7 @@ export class Validator {
     }
 
     private validator: ajv.Ajv;
-    
+
     constructor() {
         this.validator = new ajv({ extendRefs: true });
     }
@@ -39,9 +39,14 @@ export class Validator {
                         if (result.data.id === "http://schema.management.azure.com/schemas/2014-04-01-preview/Sendgrid.json") {
                             result.data.id = "http://schema.management.azure.com/schemas/2015-01-01/Sendgrid.Email.json";
                         }
-                        this.validator.addSchema(result.data);
-                        //hack to add https
-                        result.data.id = result.data.id.replace("http://", "https://");
+                        if (result.data.id)
+                            this.validator.addSchema(result.data);
+                        //hack to add https and http since each schema references in a different way
+                        if (result.data.id.startsWith("http://")) {
+                            result.data.id = result.data.id.replace("http://", "https://");
+                        } else {
+                            result.data.id = result.data.id.replace("https://", "http://");
+                        }
                         this.validator.addSchema(result.data);
                     });
                     this.validator.getSchema(templateSchema);
@@ -70,7 +75,11 @@ export class Validator {
 
             this.substituteDefaults(current);
             this.validator.validate(current["$schema"], current);
-            resolve(this.validator.errors.map(x => new Error(x.message)) || []);
+            if (this.validator.errors) {
+                resolve(this.validator.errors.map(x => new Error(x.message)));
+            } else {
+                resolve([])
+            }
         });
     }
 

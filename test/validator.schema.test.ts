@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as mocha from 'mocha'
 import {expect} from 'chai'
 import {Validator} from '../src/validator/validator'
@@ -14,7 +15,8 @@ describe('Validate Schemas', () => {
         .catch((err: any) => done(err));
     })
     it('BasicValidation', (done) => {
-        let paramSchema: any = JSON.parse('./test/baseFiles/validParam.json');
+        var fileContent = fs.readFileSync('./test/baseFiles/validParam.json', 'utf8').toString();
+        let paramSchema: any = JSON.parse(fileContent);
         _self.validator.validateSchema('./test/baseFiles/validTemplate.json', paramSchema.parameters)
         .then((result: Error[]) => {
             if(result) expect(result).to.be.empty;
