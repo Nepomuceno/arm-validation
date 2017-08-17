@@ -8,7 +8,7 @@
     "prebuild": "npm i",
     "build": "rimraf bin/ & npm run compile",
     "precomplete": "npm run build",
-    "complete":"npm run test"
+    "complete": "npm run test"
   },
   "bin": {
     "azcosts": "bin/arm-validator.js"

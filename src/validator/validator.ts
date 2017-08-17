@@ -70,7 +70,7 @@ export class Validator {
 
             this.substituteDefaults(current);
             this.validator.validate(current["$schema"], current);
-            resolve(this.validator.errors || []);
+            resolve(this.validator.errors.map(x => new Error(x.message)) || []);
         });
     }
 
@@ -106,7 +106,7 @@ export class Validator {
                 });
         }
         if (template.resources) {
-            template.resources.forEach((resource: any, i) => {
+            template.resources.forEach((resource: any, i: any) => {
 
                 // Avoids schema failures due to validation of [resourceGroup.location()] against the valid location enum
                 function resourceGroup() {
