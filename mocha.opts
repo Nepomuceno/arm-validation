@@ -3,5 +3,6 @@
 --timeout 20000
 --watch-extensions ts,json
 --recursive
+--reporter dot
 
 test/**/validator.quickstart.test.ts

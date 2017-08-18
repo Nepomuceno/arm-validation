@@ -67,7 +67,7 @@ export class Validator {
 
     public validateSchema(filename: string, parameters: any = {}): Promise<Error[]> {
         return new Promise((resolve, reject) => {
-            console.log(`Validating schema for ${filename}`);
+            //console.log(`Validating schema for ${filename}`);
             var errorFile = this.validateJson(filename);
             if (errorFile) reject(errorFile);
             let current: any = JSON.parse(fs.readFileSync(filename).toString());

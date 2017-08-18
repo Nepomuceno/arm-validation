@@ -22,7 +22,7 @@ class ValidatorQuickStart {
     constructor() {
         this._files = new Set<string>();
         this._validator = new Validator();
-        walkSync('.\\azure-quickstart-templates', this._files);
+        walkSync('..\\azure-quickstart-templates', this._files);
 
     }
     public RunTest() {
@@ -30,7 +30,7 @@ class ValidatorQuickStart {
             .then(() => {
                 describe("Validate files", () => {
                     this._files.forEach(file => {
-                        if (file.indexOf('cluster-ubuntu-vm') > 1) {
+                        if (file.indexOf('remove this file') < 1) {
                             let fileName = file.split('\\')[file.split('\\').length - 1];
                             let fileParent = file.split('\\')[file.split('\\').length - 2];
                             let paramFile = file.split('.json')[0] + '.parameters.json';
