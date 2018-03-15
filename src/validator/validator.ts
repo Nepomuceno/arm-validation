@@ -24,12 +24,13 @@ export class Validator {
     constructor() {
         this.validator = new ajv(
             {
+                schemaId: 'id',
                 meta: false, // optional, to prevent adding draft-06 meta-schema
                 extendRefs: true, // optional, current default is to 'fail', spec behaviour is to 'ignore'
                 unknownFormats: 'ignore'  // optional, current default is true (fail)
             });
         var metaSchema = require('ajv/lib/refs/json-schema-draft-04.json');
-            this.validator.addMetaSchema(metaSchema);
+        this.validator.addMetaSchema(metaSchema);
     }
 
     public Initialize(): Promise<null> {
@@ -42,13 +43,45 @@ export class Validator {
             return Promise.all(requests)
                 .then(results => {
                     results.forEach(result => {
+                        console.log(result.data.id);
                         //HACK: until microsoft fix their base schemas.
-                        if (result.data.id === "http://schema.management.azure.com/schemas/2014-04-01-preview/Sendgrid.json") {
+                        if (result.data.id === "https://schema.management.azure.com/schemas/2014-04-01-preview/Sendgrid.json") {
                             result.data.id = "http://schema.management.azure.com/schemas/2015-01-01/Sendgrid.Email.json";
                         }
+                        //HACK: another hack until the template it is fixed again
+                        // https://schema.management.azure.com/schemas/2017-07-01/Microsoft.Devices.json
+                        if(result.request.path === "/schemas/2017-07-01/Microsoft.Devices.json") {
+                            if(result.data.id ===  "https://schema.management.azure.com/schemas/2016-02-03/Microsoft.Devices.json#")
+                            {
+                                result.data.id = "https://schema.management.azure.com/schemas/2017-07-01/Microsoft.Devices.json";
+                            } else {
+                                console.log("Microsoft fixed it");
+                            }
+                        }
+                        //HACK: another hack until the template it is fixed again
+                        // https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json
+                        if(result.request.path === "/schemas/2017-11-15/Microsoft.Devices.json") {
+                            if(result.data.id ===  "https://schema.management.azure.com/schemas/2017-08-21-preview/Microsoft.Devices.json#")
+                            {
+                                result.data.id = "https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json";
+                            } else {
+                                console.log("Microsoft fixed it");
+                            }
+                        }
+                        //HACK: another hack until the template it is fixed again
+                        // https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json
+                        if(result.request.path === "/schemas/2016-03-01/Microsoft.Insights.json") {
+                            if(result.data.id ===  "https://schema.management.azure.com/schemas/2016-03-01/microsoft.insights.json#")
+                            {
+                                result.data.id = "https://schema.management.azure.com/schemas/2016-03-01/Microsoft.Insights.json";
+                            } else {
+                                console.log("Microsoft fixed it");
+                            }
+                        }
+                        
                         if (result.data.id)
                             this.validator.addSchema(result.data);
-                        //hack to add https and http since each schema references in a different way
+                        //HACK: to add https and http since each schema references in a different way
                         if (result.data.id.startsWith("http://")) {
                             result.data.id = result.data.id.replace("http://", "https://");
                         } else {
