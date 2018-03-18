@@ -2,26 +2,41 @@ import * as fs from 'fs';
 import * as ajv from 'ajv';
 import { AxiosPromise } from 'axios';
 import axios from 'axios';
+import * as path from 'path';
 import { CurrentSchemas, templateSchema, parameterSchema } from './currentSchemas'
 
 export class Validator {
 
+    private walkSync(dir: string, result: Set<string>): any {
+        var stats = fs.lstatSync(dir);
+        if (stats.isFile()
+            && dir.endsWith('.json')
+            && !dir.endsWith('\\metadata.json')
+            && !dir.endsWith('\\package.json')) {
+            result.add(dir);
+        };
+        if (stats.isFile()) return;
+        if (dir.split('\\')[dir.split('\\').length - 1].startsWith(`.`)) return;
+        return fs.readdirSync(dir).map(f => this.walkSync(path.join(dir, f), result));
+    };
+
     private loadSchema(uri: string, callback: any) {
-        console.log(`download file ${uri}`);
+                  (`download file ${uri}`);
         axios.get(uri)
             .then((response) => {
                 console.log(`Load data for ${response.data.id}`);
                 callback(null, response.data);
             })
             .catch((error) => {
-                console.log(error);
+                // console.log(error);
                 callback(error || new Error('Loading error: ' + error));
             });
     }
-
+    private tempDir: string;
     private validator: ajv.Ajv;
 
     constructor() {
+        this.tempDir = 'tempSchema'
         this.validator = new ajv(
             {
                 schemaId: 'id',
@@ -35,59 +50,41 @@ export class Validator {
 
     public Initialize(): Promise<null> {
         var self = this;
+
         return new Promise((resolve, reject) => {
             var requests: AxiosPromise[] = [];
             CurrentSchemas.forEach(schema => {
-                requests.push(axios.get(schema));
+
+                var tempFile;
+                try {
+                    var schemaPath = schema.split('/');
+                    var schemaDate = schemaPath[schemaPath.length - 2];
+                    var schemaName = schemaPath[schemaPath.length - 1];
+                    var tempPath = path.resolve(this.tempDir, schemaDate, schemaName);
+                    tempFile = require(tempPath);
+                }
+                catch (err) {
+                }
+                if (tempFile) {
+                    this.addSchema(tempFile, '/schemas/' + schemaDate + '/' + schemaName);
+                } else {
+                    requests.push(axios.get(schema));
+                }
             });
             return Promise.all(requests)
                 .then(results => {
                     results.forEach(result => {
-                        console.log(result.data.id);
-                        //HACK: until microsoft fix their base schemas.
-                        if (result.data.id === "https://schema.management.azure.com/schemas/2014-04-01-preview/Sendgrid.json") {
-                            result.data.id = "http://schema.management.azure.com/schemas/2015-01-01/Sendgrid.Email.json";
+                        this.addSchema(result.data, result.request.path);
+                        var schemaPath = result.request.path.split('/');
+                        var schemaDate = schemaPath[schemaPath.length - 2];
+                        var schemaName = schemaPath[schemaPath.length - 1];
+                        if (!fs.existsSync(this.tempDir)) {
+                            fs.mkdirSync(this.tempDir);
                         }
-                        //HACK: another hack until the template it is fixed again
-                        // https://schema.management.azure.com/schemas/2017-07-01/Microsoft.Devices.json
-                        if(result.request.path === "/schemas/2017-07-01/Microsoft.Devices.json") {
-                            if(result.data.id ===  "https://schema.management.azure.com/schemas/2016-02-03/Microsoft.Devices.json#")
-                            {
-                                result.data.id = "https://schema.management.azure.com/schemas/2017-07-01/Microsoft.Devices.json";
-                            } else {
-                                console.log("Microsoft fixed it");
-                            }
+                        if (!fs.existsSync(path.join(this.tempDir, schemaDate))) {
+                            fs.mkdirSync(path.join(this.tempDir, schemaDate));
                         }
-                        //HACK: another hack until the template it is fixed again
-                        // https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json
-                        if(result.request.path === "/schemas/2017-11-15/Microsoft.Devices.json") {
-                            if(result.data.id ===  "https://schema.management.azure.com/schemas/2017-08-21-preview/Microsoft.Devices.json#")
-                            {
-                                result.data.id = "https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json";
-                            } else {
-                                console.log("Microsoft fixed it");
-                            }
-                        }
-                        //HACK: another hack until the template it is fixed again
-                        // https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json
-                        if(result.request.path === "/schemas/2016-03-01/Microsoft.Insights.json") {
-                            if(result.data.id ===  "https://schema.management.azure.com/schemas/2016-03-01/microsoft.insights.json#")
-                            {
-                                result.data.id = "https://schema.management.azure.com/schemas/2016-03-01/Microsoft.Insights.json";
-                            } else {
-                                console.log("Microsoft fixed it");
-                            }
-                        }
-                        
-                        if (result.data.id)
-                            this.validator.addSchema(result.data);
-                        //HACK: to add https and http since each schema references in a different way
-                        if (result.data.id.startsWith("http://")) {
-                            result.data.id = result.data.id.replace("http://", "https://");
-                        } else {
-                            result.data.id = result.data.id.replace("https://", "http://");
-                        }
-                        this.validator.addSchema(result.data);
+                        fs.writeFileSync(path.join(this.tempDir, schemaDate, schemaName), JSON.stringify(result.data, null, 2));
                     });
                     this.validator.getSchema(templateSchema);
                     this.validator.getSchema(parameterSchema);
@@ -96,6 +93,50 @@ export class Validator {
                     reject(err);
                 });
         });
+    }
+    private addSchema(content: any, path = "") {
+        //HACK: until microsoft fix their base schemas.
+        if (content.id === "https://schema.management.azure.com/schemas/2014-04-01-preview/Sendgrid.json") {
+            content.id = "http://schema.management.azure.com/schemas/2015-01-01/Sendgrid.Email.json";
+        }
+        //HACK: another hack until the template it is fixed again
+        // https://schema.management.azure.com/schemas/2017-07-01/Microsoft.Devices.json
+        if (path === "/schemas/2017-07-01/Microsoft.Devices.json") {
+            if (content.id === "https://schema.management.azure.com/schemas/2016-02-03/Microsoft.Devices.json#") {
+                content.id = "https://schema.management.azure.com/schemas/2017-07-01/Microsoft.Devices.json";
+            } else {
+                console.log("Microsoft fixed it");
+            }
+        }
+        //HACK: another hack until the template it is fixed again
+        // https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json
+        if (path === "/schemas/2017-11-15/Microsoft.Devices.json") {
+            if (content.id === "https://schema.management.azure.com/schemas/2017-08-21-preview/Microsoft.Devices.json#") {
+                content.id = "https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json";
+            } else {
+                console.log("Microsoft fixed it");
+            }
+        }
+        //HACK: another hack until the template it is fixed again
+        // https://schema.management.azure.com/schemas/2017-11-15/Microsoft.Devices.json
+        if (path === "/schemas/2016-03-01/Microsoft.Insights.json") {
+            if (content.id === "https://schema.management.azure.com/schemas/2016-03-01/microsoft.insights.json#") {
+                content.id = "https://schema.management.azure.com/schemas/2016-03-01/Microsoft.Insights.json";
+            } else {
+                console.log("Microsoft fixed it");
+            }
+        }
+
+        if (content.id) {
+            this.validator.addSchema(content);
+        }
+        //HACK: to add https and http since each schema references in a different way
+        if (content.id.startsWith("http://")) {
+            content.id = content.id.replace("http://", "https://");
+        } else {
+            content.id = content.id.replace("https://", "http://");
+        }
+        this.validator.addSchema(content);
     }
 
     public validateSchema(filename: string, parameters: any = {}): Promise<Error[]> {

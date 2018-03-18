@@ -5,4 +5,4 @@
 --recursive
 --reporter dot
 
-test/**/validator.schema.test.ts
+test/**/validator.quickstart.test.ts

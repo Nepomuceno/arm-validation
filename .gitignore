@@ -253,3 +253,6 @@ paket-files/
 
 # VSCODE
 .vscode/
+
+tempSchema
+testresult.txt

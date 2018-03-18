@@ -22,7 +22,7 @@ class ValidatorQuickStart {
     constructor() {
         this._files = new Set<string>();
         this._validator = new Validator();
-        walkSync('..\\azure-quickstart-templates', this._files);
+        walkSync('azure-quickstart-templates', this._files);
 
     }
     public RunTest() {
@@ -58,7 +58,9 @@ class ValidatorQuickStart {
                                     }
                                     errors.then(errors => {
                                         if (errors.length > 0) {
-                                            done(errors[0]);
+                                            var err = new Error('File: ' + file + 'error: ' + errors[0]);
+                                            err.stack = errors[0].stack;
+                                            done(err);
                                         } else {
                                             expect(errors).to.be.empty;
                                             done();
