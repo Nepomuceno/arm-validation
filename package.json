@@ -45,9 +45,13 @@
     "typescript": "^2.4.2"
   },
   "dependencies": {
+    "@types/commander": "^2.12.2",
     "ajv": "^6.2.1",
     "axios": "^0.18.0",
-    "commander": "^2.11.0",
-    "inquirer": "^5.1.0"
+    "commander": "^2.15.1",
+    "github-api": "^3.0.0",
+    "inquirer": "^5.1.0",
+    "simple-git": "^1.92.0",
+    "ts-git": "^0.1.0"
   }
 }
