@@ -51,6 +51,7 @@
     "commander": "^2.15.1",
     "github-api": "^3.0.0",
     "inquirer": "^5.1.0",
+    "npm": "^6.0.0",
     "simple-git": "^1.92.0",
     "ts-git": "^0.1.0"
   }
