@@ -128,6 +128,17 @@ export const currentSchemas: string[] = [
     "http://schema.management.azure.com/schemas/2018-01-10/Microsoft.RecoveryServices.json",
     "http://schema.management.azure.com/schemas/2018-01-31/Microsoft.Consumption.json",
     "http://schema.management.azure.com/schemas/2018-03-01/Microsoft.Insights.json",
+    "https://schema.management.azure.com/schemas/2017-09-07-privatepreview/Microsoft.Kusto.json",
+    "https://schema.management.azure.com/schemas/2017-09-01/Microsoft.Batch.json",
+    "https://schema.management.azure.com/schemas/2018-01-22/Microsoft.Devices.json",
+    "https://schema.management.azure.com/schemas/2017-12-01/Microsoft.Compute.json",
+    "https://schema.management.azure.com/schemas/2018-02-01/Microsoft.Network.json",
+    "https://schema.management.azure.com/schemas/2018-01-01/Microsoft.EventGrid.json",
+    "https://schema.management.azure.com/schemas/2018-03-01/Microsoft.BatchAI.json",
+    "https://schema.management.azure.com/schemas/2018-04-16/Microsoft.Insights.json",
+    "https://schema.management.azure.com/schemas/2016-12-01/Microsoft.RecoveryServices.json",
+    "https://schema.management.azure.com/schemas/2018-04-01/Microsoft.Compute.json",
+    "https://schema.management.azure.com/schemas/2017-07-01/Microsoft.RecoveryServices.json"
     ];
 export { currentSchemas as CurrentSchemas };
 export const templateSchema = "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json";
@@ -205,3 +216,15 @@ export const parameterSchema = "http://schema.management.azure.com/schemas/2015-
 
 // https://schema.management.azure.com/schemas/2018-03-01/Microsoft.Insights.json
 // 
+
+// New Resources 03-05-2018
+// https://schema.management.azure.com/schemas/2017-09-07-privatepreview/Microsoft.Kusto.json
+// https://schema.management.azure.com/schemas/2017-09-01/Microsoft.Batch.json
+// https://schema.management.azure.com/schemas/2017-12-01/Microsoft.Compute.json
+// https://schema.management.azure.com/schemas/2018-02-01/Microsoft.Network.json
+// https://schema.management.azure.com/schemas/2018-01-01/Microsoft.EventGrid.json
+// https://schema.management.azure.com/schemas/2018-03-01/Microsoft.BatchAI.json
+// https://schema.management.azure.com/schemas/2018-04-16/Microsoft.Insights.json
+// https://schema.management.azure.com/schemas/2016-12-01/Microsoft.RecoveryServices.json
+// https://schema.management.azure.com/schemas/2018-04-01/Microsoft.Compute.json
+// https://schema.management.azure.com/schemas/2017-07-01/Microsoft.RecoveryServices.json
