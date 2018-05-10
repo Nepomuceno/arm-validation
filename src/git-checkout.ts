@@ -6,7 +6,7 @@ import * as GitHub from 'github-api';
 import { Repository } from 'github-api';
 
 
-var currentDir = simpleGit('C:\\mine\\GitHub\\Nepomuceno\\arm-validation\\azure-quickstart-templates');
+var currentDir = simpleGit('D:\\projects\\nepomuceno\\arm-validation\\azure-quickstart-templates');
 //var syncGit = simpleGitSync('C:\\mine\\GitHub\\Nepomuceno\\arm-validation\\azure-quickstart-templates');
 currentDir.checkIsRepo().then(r => console.log('Repo:' + r));
 currentDir.log().then(c => console.log(c.latest.message));
@@ -20,13 +20,13 @@ function updateBranches() {
             console.log(f.file);
             var dirName = f.file.split('/')[0];
             currentDir.branchLocal().then(b => {
-                if (b.all.indexOf('AUTO-' + dirName) > -1) {
-                    currentDir.checkout('AUTO-' + dirName)
+                if (b.all.indexOf('AUTO-2018-10-05-' + dirName) > -1) {
+                    currentDir.checkout('AUTO-2018-10-05-' + dirName)
                 } else {
-                    currentDir.checkoutLocalBranch('AUTO-' + dirName);
+                    currentDir.checkoutLocalBranch('AUTO-2018-10-05-' + dirName);
                 }
                 currentDir.add(f.file);
-                currentDir.commit('[Auto] adding file ' + f.file).then(c => console.log(c.commit))
+                currentDir.commit('[AUTO-2018-10-05] adding file ' + f.file,null,null).then(c => console.log(c.commit))
                 currentDir.checkout('master');
             });
         })
@@ -34,7 +34,6 @@ function updateBranches() {
 }
 async function timer(ms: number) {
     return new Promise(r => setTimeout(r, ms));
-
 }
 
 async function asyncForEach<T>(array: Array<T>, callback: Function) {
@@ -70,12 +69,12 @@ async function createPr() {
             console.log('Creating pr for: ' + br);
             try {
                 var err: any, result: any = await reposity.createPullRequest({
-                    title: '[AUTO] for ' + br.replace("AUTO-", ""),
+                    title: '[AUTO-2018-10-05] for ' + br.replace("AUTO-2018-10-05-", ""),
                     body: 'Changes to comply to [schema](https://github.com/Azure/azure-resource-manager-schemas) and validations made with [validator](https://github.com/Nepomuceno/arm-validation) \n Most of this changes were auto generated',
                     head: 'Nepomuceno:' + br,
                     base: 'master'
                 });
-                await timer(30000);
+                await timer(90000);
             } catch (error) {
                 console.log(error)
             }
@@ -84,4 +83,4 @@ async function createPr() {
         console.log(br);
     });
 }
-createPr().then(() => console.log("Finish"));
+updateBranches();
