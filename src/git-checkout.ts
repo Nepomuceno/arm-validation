@@ -20,10 +20,10 @@ function updateBranches() {
             console.log(f.file);
             var dirName = f.file.split('/')[0];
             currentDir.branchLocal().then(b => {
-                if (b.all.indexOf('AUTO-2018-10-05-' + dirName) > -1) {
-                    currentDir.checkout('AUTO-2018-10-05-' + dirName)
+                if (b.all.indexOf('AUTO-2019-01-25-' + dirName) > -1) {
+                    currentDir.checkout('AUTO-2019-01-25-' + dirName)
                 } else {
-                    currentDir.checkoutLocalBranch('AUTO-2018-10-05-' + dirName);
+                    currentDir.checkoutLocalBranch('AUTO-2019-01-25-' + dirName);
                 }
                 currentDir.add(f.file);
                 currentDir.commit('[AUTO-2018-10-05] adding file ' + f.file,null,null).then(c => console.log(c.commit))
@@ -34,6 +34,7 @@ function updateBranches() {
 }
 async function timer(ms: number) {
     return new Promise(r => setTimeout(r, ms));
+
 }
 
 async function asyncForEach<T>(array: Array<T>, callback: Function) {
@@ -53,9 +54,9 @@ async function createPr() {
     });
     var reposity = gh.getRepo('Azure', 'azure-quickstart-templates');
     reposity.listCommits(null, function (err: any, response: any) {
-        //console.log(JSON.stringify(response,null,2));
+        console.log(JSON.stringify(response,null,2));
     });
-    //console.log(JSON.stringify(me,null,2)); 
+    console.log(JSON.stringify(me,null,2)); 
 
     var b = await currentDir.branchLocal();
 
@@ -69,12 +70,13 @@ async function createPr() {
             console.log('Creating pr for: ' + br);
             try {
                 var err: any, result: any = await reposity.createPullRequest({
-                    title: '[AUTO-2018-10-05] for ' + br.replace("AUTO-2018-10-05-", ""),
+                    title: '[AUTO-2018-10-05] for ' + br.replace("AUTO-2018-10-05", ""),
                     body: 'Changes to comply to [schema](https://github.com/Azure/azure-resource-manager-schemas) and validations made with [validator](https://github.com/Nepomuceno/arm-validation) \n Most of this changes were auto generated',
                     head: 'Nepomuceno:' + br,
                     base: 'master'
                 });
-                await timer(90000);
+                console.log(result);
+                await timer(30000);
             } catch (error) {
                 console.log(error)
             }
@@ -83,4 +85,4 @@ async function createPr() {
         console.log(br);
     });
 }
-updateBranches();
+createPr();

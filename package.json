@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Azure arm validation. basic command line tool to validate arm templates agains the chema files they belong",
   "scripts": {
-    "compile": "tsc --experimentalDecorators --target es5 --module commonjs --noImplicitAny",
+    "compile": "tsc --experimentalDecorators --target es5 --module commonjs",
     "test": "mocha --opts mocha.opts",
     "prebuild": "npm i",
     "build": "rimraf bin/ & npm run compile",
@@ -11,7 +11,7 @@
     "complete": "npm run test"
   },
   "bin": {
-    "azcosts": "bin/arm-validator.js"
+    "arm-validator": "bin/arm-validator.js"
   },
   "keywords": [
     "cli",
@@ -23,7 +23,7 @@
     "email": "gabriel.bico@gmail.com"
   },
   "engines": {
-    "node": ">= 4.0.0"
+    "node": ">= 8.0.0"
   },
   "repository": {
     "type": "git",
@@ -31,28 +31,28 @@
   },
   "devDependencies": {
     "@types/ajv": "^1.0.0",
-    "@types/chai": "^4.1.3",
-    "@types/inquirer": "0.0.41",
-    "@types/mocha": "^5.2.0",
-    "@types/node": "^10.0.4",
-    "chai": "^4.1.2",
-    "eslint": "^4.19.1",
-    "eslint-plugin-mocha": "^5.0.0",
-    "mocha": "^5.1.1",
-    "rimraf": "^2.6.2",
-    "sinon": "^5.0.7",
-    "ts-node": "^6.0.3",
-    "typescript": "^2.8.3"
+    "@types/chai": "^4.1.7",
+    "@types/inquirer": "0.0.43",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.18",
+    "@types/commander": "2.12.2",
+    "chai": "^4.2.0",
+    "eslint": "^5.12.1",
+    "eslint-plugin-mocha": "^5.2.1",
+    "mocha": "^5.2.0",
+    "rimraf": "^2.6.3",
+    "sinon": "^7.2.3",
+    "ts-node": "^8.0.2",
+    "typescript": "^3.2.4"
   },
   "dependencies": {
-    "@types/commander": "^2.12.2",
-    "ajv": "^6.4.0",
+    "ajv": "^6.7.0",
     "axios": "^0.18.0",
-    "commander": "^2.15.1",
+    "commander": "^2.19.0",
     "github-api": "^3.0.0",
-    "inquirer": "^5.2.0",
-    "npm": "^6.0.0",
-    "simple-git": "^1.92.0",
+    "inquirer": "^6.2.1",
+    "npm": "^6.7.0",
+    "simple-git": "^1.107.0",
     "ts-git": "^0.1.0"
   }
 }
